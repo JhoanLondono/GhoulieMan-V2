@@ -6,24 +6,39 @@ public class CharacterMovement : MonoBehaviour
     public float moveDirection;
     public bool facingRight = true;
     private new Rigidbody rigidbody;
-    private Animator Anim;
+    private Animator anim;
+
+    public float jumpSpeed = 800.0f;
+
+    public bool grounded = false;
+    public Transform groundCheck;
+    public float groundRadius = 0.2f;
+    public LayerMask whatIsGround;
 
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
     {
         rigidbody = GetComponent<Rigidbody>();
-        Anim = GetComponent<Animator>();
+        anim = GetComponent<Animator>();
+        groundCheck = GameObject.Find("GroundCheck").transform;
     }
 
     // Update is called once per frame
     void Update()
     {
         moveDirection = Input.GetAxis("Horizontal");
+
+        if(grounded && Input.GetButtonDown("Jump"))
+        {
+            anim.SetTrigger("isJumping");
+            rigidbody.AddForce(new Vector2(0, jumpSpeed));
+        }
     }
 
     void FixedUpdate()
     {
         rigidbody.linearVelocity = new Vector2(moveDirection * maxSpeed, rigidbody.linearVelocity.y);
+        grounded = Physics2D.OverlapCircle(groundCheck.position, groundRadius, whatIsGround);
 
         if (moveDirection > 0.0f && !facingRight)
         {
@@ -34,7 +49,7 @@ public class CharacterMovement : MonoBehaviour
             Flip();
         }
 
-        Anim.SetFloat("Speed", Mathf.Abs(moveDirection));
+        anim.SetFloat("Speed", Mathf.Abs(moveDirection));
     }
 
     void Flip()
